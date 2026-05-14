@@ -1,0 +1,6 @@
+﻿segment_feature,bin,train_rows,train_positive_rate,threshold,experiment
+Flotation Column 07 Air Flow__std,"(-0.001, 1.36]",820,0.12926829268292683,0.245,segment_threshold_policy
+Flotation Column 07 Air Flow__std,"(1.36, 2.292]",819,0.0927960927960928,0.22499999999999998,segment_threshold_policy
+Flotation Column 07 Air Flow__std,"(2.292, 4.479]",819,0.08302808302808302,0.30999999999999994,segment_threshold_policy
+Flotation Column 07 Air Flow__std,"(4.479, 51.718]",819,0.15873015873015872,0.33999999999999997,segment_threshold_policy
+Flotation Column 07 Air Flow__std,fallback_global,3277,0.11595971925541654,0.30999999999999994,segment_threshold_policy

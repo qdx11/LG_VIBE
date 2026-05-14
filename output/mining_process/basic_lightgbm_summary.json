@@ -1,0 +1,14 @@
+{
+  "model_type": "LGBMClassifier",
+  "target": "% Silica Concentrate >= 4.0",
+  "rows": 4097,
+  "train_rows": 3277,
+  "test_rows": 820,
+  "feature_count": 48,
+  "elapsed_time_seconds": 2.395505666732788,
+  "model_path": "C:\\Users\\User\\Desktop\\day3\\models\\best_model.pkl",
+  "feature_names_path": "C:\\Users\\User\\Desktop\\day3\\models\\feature_names.pkl",
+  "train_csv_path": "C:\\Users\\User\\Desktop\\day3\\data\\processed\\mining_process\\train.csv",
+  "test_csv_path": "C:\\Users\\User\\Desktop\\day3\\data\\processed\\mining_process\\test.csv",
+  "scaler_path": null
+}

@@ -1,0 +1,49 @@
+﻿feature,importance
+Amina Flow,125
+Flotation Column 01 Air Flow,115
+% Silica Feed,109
+elapsed_hours,100
+Flotation Column 06 Level__std,91
+day,88
+Ore Pulp Density,82
+Flotation Column 02 Air Flow__std,80
+Flotation Column 07 Air Flow__std,78
+Flotation Column 03 Level__std,74
+Flotation Column 06 Level,73
+Amina Flow__std,72
+Flotation Column 03 Air Flow,69
+Starch Flow__std,64
+Ore Pulp pH__std,62
+Starch Flow,62
+Flotation Column 05 Air Flow,61
+% Iron Feed,59
+Flotation Column 04 Air Flow,58
+Flotation Column 06 Air Flow__std,57
+Flotation Column 05 Level,56
+Flotation Column 01 Level__std,55
+Flotation Column 02 Level__std,55
+Flotation Column 05 Level__std,53
+Ore Pulp pH,52
+Flotation Column 04 Air Flow__std,51
+Flotation Column 05 Air Flow__std,51
+Flotation Column 04 Level,49
+hour,49
+Flotation Column 03 Air Flow__std,48
+Flotation Column 03 Level,48
+Flotation Column 02 Level,46
+Ore Pulp Density__std,46
+Ore Pulp Flow,45
+Flotation Column 04 Level__std,45
+Flotation Column 02 Air Flow,42
+Flotation Column 07 Level__std,42
+Ore Pulp Flow__std,40
+Flotation Column 06 Air Flow,39
+Flotation Column 01 Air Flow__std,35
+Flotation Column 07 Level,33
+Flotation Column 01 Level,33
+Flotation Column 07 Air Flow,31
+dayofweek,22
+month,3
+% Silica Feed__std,0
+% Iron Feed__std,0
+rows_per_timestamp,0

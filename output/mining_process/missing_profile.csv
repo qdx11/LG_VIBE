@@ -1,0 +1,53 @@
+﻿column,missing_count,missing_rate
+date,0,0.0
+% Iron Feed,0,0.0
+% Silica Feed,0,0.0
+Starch Flow,0,0.0
+Amina Flow,0,0.0
+Ore Pulp Flow,0,0.0
+Ore Pulp pH,0,0.0
+Ore Pulp Density,0,0.0
+Flotation Column 01 Air Flow,0,0.0
+Flotation Column 02 Air Flow,0,0.0
+Flotation Column 03 Air Flow,0,0.0
+Flotation Column 04 Air Flow,0,0.0
+Flotation Column 05 Air Flow,0,0.0
+Flotation Column 06 Air Flow,0,0.0
+Flotation Column 07 Air Flow,0,0.0
+Flotation Column 01 Level,0,0.0
+Flotation Column 02 Level,0,0.0
+Flotation Column 03 Level,0,0.0
+Flotation Column 04 Level,0,0.0
+Flotation Column 05 Level,0,0.0
+Flotation Column 06 Level,0,0.0
+Flotation Column 07 Level,0,0.0
+% Iron Concentrate,0,0.0
+% Silica Concentrate,0,0.0
+% Iron Feed__std,0,0.0
+% Silica Feed__std,0,0.0
+Starch Flow__std,0,0.0
+Amina Flow__std,0,0.0
+Ore Pulp Flow__std,0,0.0
+Ore Pulp pH__std,0,0.0
+Ore Pulp Density__std,0,0.0
+Flotation Column 01 Air Flow__std,0,0.0
+Flotation Column 02 Air Flow__std,0,0.0
+Flotation Column 03 Air Flow__std,0,0.0
+Flotation Column 04 Air Flow__std,0,0.0
+Flotation Column 05 Air Flow__std,0,0.0
+Flotation Column 06 Air Flow__std,0,0.0
+Flotation Column 07 Air Flow__std,0,0.0
+Flotation Column 01 Level__std,0,0.0
+Flotation Column 02 Level__std,0,0.0
+Flotation Column 03 Level__std,0,0.0
+Flotation Column 04 Level__std,0,0.0
+Flotation Column 05 Level__std,0,0.0
+Flotation Column 06 Level__std,0,0.0
+Flotation Column 07 Level__std,0,0.0
+rows_per_timestamp,0,0.0
+hour,0,0.0
+dayofweek,0,0.0
+day,0,0.0
+month,0,0.0
+elapsed_hours,0,0.0
+high_silica_risk,0,0.0

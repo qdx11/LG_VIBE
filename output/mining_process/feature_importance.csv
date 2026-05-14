@@ -1,0 +1,49 @@
+﻿feature,importance
+elapsed_hours,0.03917480027848581
+day,0.03776261562435992
+Amina Flow,0.03511514742729767
+% Silica Feed,0.03498501190760763
+% Iron Feed,0.034668469141439104
+dayofweek,0.03373954397912186
+Flotation Column 03 Air Flow,0.029660329863178903
+Flotation Column 01 Air Flow,0.027525727119656195
+Flotation Column 05 Level,0.026780148427318563
+Flotation Column 06 Level,0.026521550633569712
+hour,0.025752470120365252
+Ore Pulp pH,0.02556693027888849
+Flotation Column 02 Air Flow,0.024368439184923766
+Flotation Column 07 Level,0.023839757054873553
+month,0.023747904517383355
+Flotation Column 06 Level__std,0.023017045462351532
+Flotation Column 04 Air Flow,0.02278643194833198
+Flotation Column 04 Level,0.02270710571557452
+Flotation Column 02 Level,0.022400594832274037
+Flotation Column 03 Level,0.02212260607819847
+Flotation Column 01 Level,0.02139173965888991
+Ore Pulp Density,0.021389146197065504
+Flotation Column 07 Air Flow__std,0.021351943860486205
+Flotation Column 05 Air Flow,0.020985992807249318
+Flotation Column 06 Air Flow__std,0.020212618845674334
+Flotation Column 05 Air Flow__std,0.020016158882931796
+Starch Flow__std,0.019953485355157872
+Flotation Column 04 Air Flow__std,0.019386394879063885
+Ore Pulp Flow,0.017948801543933565
+Flotation Column 07 Level__std,0.017849386717691023
+Amina Flow__std,0.017588855360062567
+Starch Flow,0.017348107829567548
+Flotation Column 07 Air Flow,0.017190496049524478
+Flotation Column 04 Level__std,0.01691007493809128
+Flotation Column 05 Level__std,0.01679328961367468
+Flotation Column 06 Air Flow,0.016779573613585237
+Ore Pulp pH__std,0.016472980567561232
+Flotation Column 02 Level__std,0.016145763510678972
+Ore Pulp Density__std,0.016072373053114243
+Ore Pulp Flow__std,0.0159520930055035
+Flotation Column 03 Level__std,0.015869476274152396
+Flotation Column 02 Air Flow__std,0.014304886437151913
+Flotation Column 03 Air Flow__std,0.01343455196913313
+Flotation Column 01 Level__std,0.013232697725526703
+Flotation Column 01 Air Flow__std,0.013176481709328383
+% Silica Feed__std,0.0
+% Iron Feed__std,0.0
+rows_per_timestamp,0.0

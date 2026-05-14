@@ -1,0 +1,17 @@
+.env
+lg_vibe/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Raw source data is large; processed submission data is committed instead.
+data/raw/
+
+# Local/editor artifacts
+.vscode/
+.idea/
+*.log
+
+# Streamlit local config/cache
+.streamlit/secrets.toml
+.streamlit/cache/

@@ -1,0 +1,9 @@
+{
+  "best_refinement_experiment": "segment_threshold_policy",
+  "expert_review_flag_count": 60,
+  "base_feature_count": 48,
+  "rolling_feature_count": 21,
+  "feature_count_after_rolling": 69,
+  "train_rows": 3277,
+  "test_rows": 820
+}

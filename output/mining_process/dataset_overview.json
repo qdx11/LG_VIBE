@@ -1,0 +1,12 @@
+{
+  "rows": 4097,
+  "columns": 52,
+  "date_min": "2017-03-10 01:00:00",
+  "date_max": "2017-09-09 23:00:00",
+  "target": "% Silica Concentrate",
+  "classification_threshold": 4.0,
+  "positive_rate": 0.1159384915792043,
+  "positive_count": 475,
+  "negative_count": 3622,
+  "feature_count": 48
+}
