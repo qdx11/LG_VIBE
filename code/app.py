@@ -655,16 +655,29 @@ def tab_project_report() -> None:
     top_features = []
     if not feature_importance.empty:
         top_features = feature_importance.head(5)["feature"].tolist()
+    label_delay_count = int(label_candidates["possible_label_delay"].sum()) if not label_candidates.empty else 0
+    sensor_anomaly_count = int(label_candidates["possible_sensor_anomaly"].sum()) if not label_candidates.empty else 0
 
     st.subheader("프로젝트 진행 보고서")
     feature_text = ", ".join(f"`{feature}`" for feature in top_features)
     st.markdown(
         f"""
         ### 1. 프로젝트 목표
+        - 학습/평가 데이터셋은 광물 선별 공정의 원료 품질, 약품 투입량, 펄프 조건, 부유선별 컬럼의 공기 유량/레벨 데이터를 포함함.
+        - 위 공정 변수들을 활용해 최종 품질 지표인 `% Silica Concentrate`가 기준치 이상으로 높아지는지 예측함.
         - 광물 선별 공정 데이터로 최종 품질 위험 예측 모델 구성함.
         - `% Silica Concentrate >= 4.0`을 고실리카 위험으로 정의함.
         - 전체 `{overview.get("rows", 0):,}`개 timestamp 중 위험 클래스 비율 약 `{overview.get("positive_rate", 0):.1%}` 확인함.
         - 불균형 분류 문제로 보고 PR-AUC, F1, Precision, Recall 함께 확인함.
+        """
+    )
+
+    st.markdown(
+        f"""
+        ### 제출용 핵심 요약
+        - **데이터셋 소개**: 원료 품질, 약품 투입량, 펄프 조건, 부유선별 컬럼 운전 데이터를 활용해 `% Silica Concentrate` 고위험 여부를 예측함.
+        - **최고 성능 세팅**: 가장 좋은 고도화 세팅은 `{refinement_best_name}`임. 오분류 분석에서 확인한 공정 변동성 구간별로 threshold를 다르게 적용해 Test F1 macro `{refinement_best_f1:.4f}` 확인함.
+        - **잘 못 맞히는 케이스**: 모델이 강하게 확신했지만 틀린 큰 마진 오분류에서 라벨 지연 의심 `{label_delay_count}`건, 센서 이상 의심 `{sensor_anomaly_count}`건 확인함. 특히 주변 timestamp 라벨 흐름과 현재 라벨이 충돌하거나 특정 센서 변동성이 큰 경우를 어려운 케이스로 봄.
         """
     )
 
