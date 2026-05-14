@@ -61,6 +61,15 @@ def fmt_pvalue(value: float) -> str:
     return f"{value:.3f}"
 
 
+def metric_value(df: pd.DataFrame, experiment: str, column: str) -> str:
+    if df.empty or column not in df.columns:
+        return "N/A"
+    row = df[df["experiment"] == experiment]
+    if row.empty:
+        return "N/A"
+    return f"{float(row[column].iloc[0]):.4f}"
+
+
 def tab_basic_lightgbm() -> None:
     summary = read_json("basic_lightgbm_summary.json")
     metrics = read_csv("basic_lightgbm_metrics.csv")
@@ -81,6 +90,14 @@ def tab_basic_lightgbm() -> None:
 
     st.caption(f"Target: `{summary.get('target', '')}`")
     st.dataframe(metrics, use_container_width=True, hide_index=True)
+    st.markdown(
+        """
+        **해석**
+        - Train/Test 성능을 같이 확인함.
+        - Train 성능이 Test보다 높으면 과적합 가능성 봄.
+        - 제출용 기준에서는 Test 성능을 더 중요하게 봄.
+        """
+    )
 
     if "train_test_gap" in metrics.columns:
         gap = float(metrics["train_test_gap"].iloc[0])
@@ -97,12 +114,28 @@ def tab_basic_lightgbm() -> None:
         col1.image(str(train_cm_path), caption="Train Confusion Matrix")
     if test_cm_path.exists():
         col2.image(str(test_cm_path), caption="Test Confusion Matrix")
+    st.markdown(
+        """
+        **해석**
+        - Confusion Matrix로 정상/위험 클래스를 얼마나 맞췄는지 확인함.
+        - False Negative는 실제 위험인데 놓친 경우라 운영상 더 주의해서 봄.
+        - False Positive는 정상인데 위험으로 예측한 경우라 알람 비용 관점에서 확인함.
+        """
+    )
 
     st.subheader("Feature Importance Top 10")
     if not feature_importance.empty:
         top10 = feature_importance.head(10).copy()
         fig = px.bar(top10.sort_values("importance"), x="importance", y="feature", orientation="h")
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown(
+            f"""
+            **해석**
+            - 상위 변수 `{top10.iloc[0]["feature"]}`가 기본 LightGBM에서 가장 크게 작동함.
+            - 원료 품질, 공기 유량, 컬럼 레벨, 시간 흐름 관련 변수가 품질 위험 예측에 중요함.
+            - 중요도가 낮은 변수는 제거 후보로 보기보다, 다른 변수와의 상호작용 가능성까지 함께 봄.
+            """
+        )
         st.dataframe(top10, use_container_width=True, hide_index=True)
 
     if not predictions.empty:
@@ -112,6 +145,13 @@ def tab_basic_lightgbm() -> None:
             predictions[predictions["split"] == split].head(50),
             use_container_width=True,
             hide_index=True,
+        )
+        st.markdown(
+            """
+            **해석**
+            - 예측 확률 `proba_1`이 1에 가까울수록 고실리카 위험으로 강하게 판단함.
+            - 실제 라벨과 예측이 다른 행은 이후 오분류 분석 탭에서 별도로 확인함.
+            """
         )
 
     st.subheader("저장 파일")
@@ -168,6 +208,14 @@ def tab_experiments() -> None:
         use_container_width=True,
         hide_index=True,
     )
+    st.markdown(
+        """
+        **해석**
+        - 모델, 전처리, 샘플링 조건을 한 표에서 비교함.
+        - PR-AUC는 불균형 데이터에서 위험 클래스를 얼마나 잘 구분하는지 보기 위해 우선 확인함.
+        - 평균 성능뿐 아니라 CI 범위도 함께 봐서 실험 안정성 확인함.
+        """
+    )
 
     st.subheader("모델별 성능 비교")
     plot_df = summary.sort_values(metric, ascending=False).head(15).copy()
@@ -181,6 +229,27 @@ def tab_experiments() -> None:
     )
     fig.update_layout(yaxis={"categoryorder": "total ascending"})
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown(
+        """
+        **해석**
+        - 막대가 길수록 선택한 기준 지표가 좋은 실험임.
+        - 상위권 모델이 특정 계열에 몰리면 해당 모델 구조가 데이터 패턴에 잘 맞는 것으로 봄.
+        - 성능 차이가 작을 때는 단순 순위보다 fold 안정성과 오분류 분석까지 같이 확인함.
+        """
+    )
+
+    st.subheader("실험군별 결과 해석")
+    st.markdown(
+        f"""
+        - **Dummy baseline**: `dummy_prior`는 기준점으로 사용함. PR-AUC `{metric_value(summary, "dummy_prior", "pr_auc_mean")}` 확인함. 이후 모델들이 이 값보다 충분히 개선되는지 봄.
+        - **선형 모델**: `logistic_balanced`는 단순하고 해석 가능한 기준 모델로 확인함. 복잡한 비선형 공정 패턴을 모두 잡기에는 한계 있음.
+        - **Tree ensemble**: `random_forest_balanced`, `extra_trees_balanced` 비교함. 특히 `extra_trees_balanced`가 PR-AUC `{metric_value(summary, "extra_trees_balanced", "pr_auc_mean")}`로 가장 높게 나와, 비선형 변수 조합을 잘 잡는 것으로 봄.
+        - **LightGBM 기본형**: `lightgbm_base` PR-AUC `{metric_value(summary, "lightgbm_base", "pr_auc_mean")}` 확인함. 기본 성능은 안정적이나 recall/precision 균형은 추가 조정 필요함.
+        - **불균형 대응**: `scale_pos_weight`, random over/under, SMOTE 비교함. `lightgbm_scale_pos_weight`와 `lightgbm_random_over`는 기본 LightGBM 대비 PR-AUC가 소폭 개선되어 클래스 불균형 대응 효과 확인함.
+        - **이상치 처리**: p01/p99 clipping, IQR clipping 비교함. 일부 clipping은 성능이 낮아져, 이 데이터에서는 극단값 일부가 공정 상태를 설명하는 정보일 가능성 있음.
+        - **Missing indicator**: 결측이 거의 없는 데이터라 `missing_indicator` 효과는 제한적으로 봄.
+        """
+    )
 
     st.subheader("통계검증")
     if tests.empty:
@@ -193,6 +262,14 @@ def tab_experiments() -> None:
         st.dataframe(tests_view, use_container_width=True, hide_index=True)
         st.caption(
             "5-fold의 fold별 PR-AUC 차이에 대해 paired test를 수행하고, 여러 실험을 동시에 비교하므로 Holm 보정을 적용했습니다."
+        )
+        st.markdown(
+            """
+            **해석**
+            - p-value는 모델 개선이 우연인지 확인하기 위한 보조 지표로 봄.
+            - 여러 실험을 동시에 비교했기 때문에 Holm 보정값을 함께 확인함.
+            - fold 수가 5개라 검정력은 제한적이므로, 효과 크기와 성능 안정성도 같이 봄.
+            """
         )
 
     st.subheader("시도한 방법론과 해석")
@@ -218,6 +295,14 @@ def tab_experiments() -> None:
             title="Fold-level PR-AUC dispersion",
         )
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown(
+            """
+            **해석**
+            - fold별 점이 고르게 높으면 안정적인 모델로 봄.
+            - 특정 fold에서만 성능이 높거나 낮으면 데이터 구간 특성에 민감한 모델로 봄.
+            - 제출용 최종 선택은 평균 성능과 fold 변동성을 같이 고려함.
+            """
+        )
 
     st.subheader("오분류 인사이트 기반 고도화 실험")
     if refinement_table.empty:
@@ -242,20 +327,36 @@ def tab_experiments() -> None:
             title="Refinement experiments by Test F1 macro",
         )
         st.plotly_chart(fig, use_container_width=True)
-
         st.markdown(
             """
-            실제 반영한 고도화안:
-            - 라벨 오류 의심 샘플을 `expert_review_flag`로 표시하고 제외 재학습 실험
-            - 센서 이상 방어를 위한 3-sigma anomaly flag
-            - 직전 timestamp 기반 rolling median/delta feature
-            - robust p01/p99 clipping
-            - 오류 집중 feature 구간 기반 segment threshold policy
+            **해석**
+            - 오분류 분석에서 얻은 힌트를 실제 feature와 threshold 정책으로 반영함.
+            - Test F1 macro가 높을수록 정상/위험 클래스 균형이 좋아진 것으로 봄.
+            - `segment_threshold_policy`가 가장 높게 나오면, 전체 공통 threshold보다 구간별 threshold가 더 적합하다고 봄.
+            """
+        )
+
+        st.markdown(
+            f"""
+            고도화 실험 해석:
+            - `rolling_features`는 직전 timestamp 흐름을 반영함. Test F1 macro `{metric_value(refinement_table.rename(columns={"Test": "test_f1"}), "rolling_features", "test_f1")}` 확인함.
+            - `anomaly_flags`는 센서 이상값 방어 목적이었으나 단독 적용 시 개선이 제한적임.
+            - `exclude_expert_review_candidates`는 라벨/센서 의심 샘플 제외 재학습 실험임. Test F1 macro `{metric_value(refinement_table.rename(columns={"Test": "test_f1"}), "exclude_expert_review_candidates", "test_f1")}` 확인함.
+            - `segment_threshold_policy`는 오류가 집중되는 feature 구간별 threshold를 다르게 적용함. Test F1 macro `{metric_value(refinement_table.rename(columns={"Test": "test_f1"}), "segment_threshold_policy", "test_f1")}`로 가장 좋음.
+            - 결론적으로 단순 모델 변경보다, 오분류 분석에서 나온 힌트를 feature와 threshold 정책에 반영한 실험이 더 효과적임.
             """
         )
         if not segment_thresholds.empty:
             st.markdown("**세그먼트별 threshold 정책**")
             st.dataframe(segment_thresholds, use_container_width=True, hide_index=True)
+            st.markdown(
+                """
+                **해석**
+                - `Flotation Column 07 Air Flow__std` 구간별로 다른 threshold를 적용함.
+                - 공정 변동성이 낮은 구간과 높은 구간의 위험 판단 기준이 다를 수 있음을 확인함.
+                - 운영 적용 시에는 구간별 threshold가 과도하게 복잡하지 않은지도 함께 봐야 함.
+                """
+            )
 
     st.subheader("향후 추가 실험 제안")
     st.markdown(
@@ -284,6 +385,14 @@ def tab_features() -> None:
     fig = px.bar(top_imp, x="importance", y="feature", orientation="h", title="Top feature importance")
     fig.update_layout(yaxis={"categoryorder": "total ascending"})
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown(
+        f"""
+        **해석**
+        - 상위 `{top_n}`개 변수의 상대적 중요도 확인함.
+        - 중요도가 높은 변수는 모델이 품질 위험을 판단할 때 자주 사용한 변수로 봄.
+        - 중요도가 높다고 원인 변수라고 단정하지 않고, 공정 해석과 함께 봄.
+        """
+    )
 
     st.subheader("중요 변수 vs 비중요 변수의 통계적 차이")
     if feature_stats.empty:
@@ -303,11 +412,27 @@ def tab_features() -> None:
         corr = corr.set_index(corr.columns[0])
         fig = px.imshow(corr, color_continuous_scale="RdBu_r", zmin=-1, zmax=1, title="Top feature correlations")
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown(
+            """
+            **해석**
+            - 붉은색은 양의 상관, 푸른색은 음의 상관으로 봄.
+            - 공기 유량/컬럼 레벨 계열 변수끼리 상관이 높으면 중복 정보 가능성 확인함.
+            - 상관이 높은 변수는 interaction feature나 차이/비율 feature 후보로 봄.
+            """
+        )
 
     st.subheader("심화 EDA 체크포인트")
     if not numeric_profile.empty:
         candidate_cols = ["column", "mean", "std", "min", "1%", "50%", "99%", "max"]
         st.dataframe(numeric_profile[[c for c in candidate_cols if c in numeric_profile.columns]], use_container_width=True, hide_index=True)
+        st.markdown(
+            """
+            **해석**
+            - p1, p99, min, max를 비교해 이상치 후보 확인함.
+            - 평균과 중앙값 차이가 큰 변수는 분포가 치우친 변수로 봄.
+            - 극단값이 많은 변수는 clipping보다 anomaly flag로 남기는 방안도 고려함.
+            """
+        )
     st.markdown(
         """
         - 공기 유량/컬럼 레벨 변수는 동일 계열 간 상관이 높을 수 있어, 평균/편차/불균형 지표를 추가 feature로 만들 여지가 있습니다.
@@ -363,6 +488,14 @@ def tab_misclassification() -> None:
     )
     fig.add_vline(x=threshold, line_dash="dash", line_color="red")
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown(
+        """
+        **해석**
+        - 빨간 점선은 현재 임계치임.
+        - 실제 위험 클래스의 확률 분포가 오른쪽으로 몰릴수록 모델 구분력이 좋다고 봄.
+        - 두 분포가 겹치는 구간은 임계치 근접 오분류가 발생하기 쉬운 구간으로 봄.
+        """
+    )
 
     st.subheader("오분류 샘플 직접 검토")
     wrong = preds[~preds["correct_at_slider"]].copy()
@@ -374,6 +507,14 @@ def tab_misclassification() -> None:
     else:
         sample = wrong.sample(min(30, len(wrong)), random_state=42) if len(wrong) else wrong
     st.dataframe(sample, use_container_width=True, hide_index=True)
+    st.markdown(
+        """
+        **해석**
+        - 임계치 근접 오분류는 모델이 애매하게 판단한 케이스로 봄.
+        - 큰 마진 오분류는 모델이 강하게 확신했지만 틀린 케이스라 라벨/센서 이상 후보로 봄.
+        - 무작위 오분류는 전체 오류 패턴을 빠르게 훑어보기 위해 사용함.
+        """
+    )
 
     st.subheader("임계치 근접 오류 vs 큰 마진 오류")
     c1, c2 = st.columns(2)
@@ -385,6 +526,13 @@ def tab_misclassification() -> None:
     if not compare.empty:
         st.markdown("**두 오류 유형을 가르는 변수 후보**")
         st.dataframe(compare.head(30), use_container_width=True, hide_index=True)
+        st.markdown(
+            """
+            **해석**
+            - p-value가 낮고 `cliffs_delta` 절댓값이 큰 변수는 오류 유형을 가르는 후보로 봄.
+            - 큰 마진 오류에서 특정 센서 변동성이 높으면 anomaly flag 또는 rolling feature 후보로 봄.
+            """
+        )
 
     st.subheader("라벨 오류 가능성 점검")
     if label_candidates.empty:
@@ -421,6 +569,14 @@ def tab_misclassification() -> None:
             title="Center error 주변의 품질값과 예측확률",
         )
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown(
+            """
+            **해석**
+            - relative step 0이 큰 마진 오분류 시점임.
+            - 주변 시점의 품질값과 예측확률 흐름이 현재 라벨과 다르면 라벨 지연 가능성 봄.
+            - 주변 흐름이 급격히 바뀌면 공정 전환 구간 또는 센서 이상 구간 가능성 확인함.
+            """
+        )
 
     st.subheader("오류 집중 세그먼트")
     if not segment_concentration.empty:
@@ -436,10 +592,26 @@ def tab_misclassification() -> None:
         )
         fig.update_layout(yaxis={"categoryorder": "total ascending"})
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown(
+            """
+            **해석**
+            - large-margin error rate가 높은 feature bin은 모델이 강하게 틀리는 조건으로 봄.
+            - 특정 feature 구간에 FP/FN이 몰리면 구간별 threshold 또는 interaction feature 후보로 봄.
+            - 이 결과를 고도화 실험의 segment threshold policy로 연결함.
+            """
+        )
 
     st.subheader("근접 오류 vs 큰 마진 오류 차이")
     if not deep_tests.empty:
         st.dataframe(deep_tests.head(30), use_container_width=True, hide_index=True)
+        st.markdown(
+            """
+            **해석**
+            - 근접 오류와 큰 마진 오류의 변수 분포 차이를 통계적으로 확인함.
+            - 차이가 큰 변수는 오분류 원인을 설명하는 후보로 봄.
+            - 이후 feature engineering 또는 라벨 검토 우선순위로 사용함.
+            """
+        )
 
     st.subheader("고도화 아이디어")
     st.markdown(
